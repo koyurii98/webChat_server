@@ -13,11 +13,11 @@ const io = socket(server,{
 });
 app.use(router);
 io.sockets.on('connection', function (socket) {
-  const { chatID, name } = socket.handshake.query;
+  const { chatID } = socket.handshake.query;
   
   socket.join(chatID);
 
-  socket.on('newUser', function () {
+  socket.on('newUser', function (name) {
     socket.emit('update', { type: 'connect', name: 'SERVER', message: name + '님이 접속하였습니다.'})
   })
 
@@ -31,11 +31,15 @@ io.sockets.on('connection', function (socket) {
     })
   })
 
-  //종료
-  socket.on('disconnect', function() {
-    socket.online = true;
-    socket.emit('update', { type: 'disconnect', name: 'SERVER', message: name + '님이 나가셨습니다.'});
+  // //종료
+  // socket.on('disconnect', function(name) {
+  //   socket.online = true;
+  //   socket.broadcast.emit('update', { type: 'disconnect', name: 'SERVER', message: name + '님이 나가셨습니다.'});
+  // })
+
+  socket.on('exitRoom', function(name) {
     socket.leave(chatID);
+    socket.broadcast.emit('update', { type: 'disconnect', name: 'SERVER', message: name + '님이 나가셨습니다.'});
   })
 })
 
